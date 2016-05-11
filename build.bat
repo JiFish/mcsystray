@@ -1,1 +1,1 @@
-pyinstaller.exe -F --noconsole mcsystray.pyw
+pyinstaller.exe -F --noconsole --icon=redstonelamp.ico mcsystray.pyw
