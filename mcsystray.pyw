@@ -2,7 +2,6 @@
 # around to allow it to still import without altering the file structure.
 # TODO: Find a better way to do this
 from sys import path
-path.insert(0, './mcstatus')
 
 import wx
 import threading
