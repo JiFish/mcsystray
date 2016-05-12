@@ -1,17 +1,6 @@
-# The mcstatus module is in a subdirectory of it's repo. This is a work-
-# around to allow it to still import without altering the file structure.
-# TODO: Find a better way to do this
-from sys import path
-
-import wx
-import threading
+import wx, threading, ConfigParser
 from mcstatus import MinecraftServer
-
-# Set the server address and port
-SERVER_ADD = "127.0.0.1:25565"
-
-# Set the check frequency (seconds)
-CHECK_FREQ = 180
+from os import path
 
 # Icon files
 TRAY_ICON_ONLINE = 'icon_green.png'
@@ -43,6 +32,7 @@ class TaskBarIcon(wx.TaskBarIcon):
         self.SetIcon(icon, title)
 
     def on_exit(self, event):
+        self.RemoveIcon()
         wx.CallAfter(self.Destroy)
 
     def on_disable_enable(self, event):
@@ -52,24 +42,54 @@ class TaskBarIcon(wx.TaskBarIcon):
             checkServer()
         else:
             self.set_icon(TRAY_ICON_DISABLED,"Disabled")
+            
+class config():
+    address = "127.0.0.1:25565"
+    frequency = 180
+    
+    def __init__(self, confile="config.ini"):
+        # Test File exists
+        if (path.isfile(confile) == False):
+            fatal_error(confile+" does not exist.")
+        # Parse file
+        cp = ConfigParser.ConfigParser()
+        try:
+            cp.read('config.ini')
+        except:
+            self.fatal_error("Invalid ini file.")
+        try:
+            self.address = cp.get('mcsystray','Address')
+        except:
+            self.fatal_error("Could not read address from config file.")
+        try:
+            self.frequency = cp.getint('mcsystray','Frequency')
+        except:
+            self.fatal_error("Could not read frequency from config file.")
+        # Sanity check frequency
+        if (self.frequency < 30 or self.frequency > 1000000):
+            self.fatal_error("Check frequency should be between 30 and 1,000,000 seconds.")
+        
+    def fatal_error(self,message):
+        wx.MessageBox(message, 'Error', wx.OK | wx.ICON_WARNING)
+        wx.CallAfter(self.Destroy)
+    
         
 def checkServer():
     if not enabled:
         return
-    t = threading.Timer(CHECK_FREQ, checkServer)
+    t = threading.Timer(conf.frequency, checkServer)
     # Setting as daemon ensures the thread exits with the program. This is
     # probably a bad way to do this, because it might leave resources locked.
     t.daemon = True
     t.start()
-    server = MinecraftServer.lookup(SERVER_ADD)
+    server = MinecraftServer.lookup(conf.address)
     try:
         status = server.status()
     except:
-        tbi.set_icon(TRAY_ICON_OFFLINE,"No Server")
-        print "No server"
+        tbi.set_icon(TRAY_ICON_OFFLINE,"Server not found.")
         return
     # For debugging
-    #print("The server has {0} players and replied in {1} ms".format(status.players.online, status.latency))
+    # print("The server has {0} players and replied in {1} ms".format(status.players.online, status.latency))
     if status.players.online < 1:
         tbi.set_icon(TRAY_ICON_ONLINE,"No Players. "+str(status.latency)+" ms")
     elif status.players.online == 1:
@@ -80,22 +100,13 @@ def checkServer():
 
 def main():
     # Globals are for the weak
-    global tbi, enabled
+    global tbi, enabled, conf
     enabled = True
-    app = wx.PySimpleApp()
+    app = wx.App(False)
+    conf = config()
     tbi = TaskBarIcon()
     checkServer()
     app.MainLoop()
-    
-# Toggle the check. The global enabled bool will be checked during the
-# next loop.
-def disable_enable():
-    global enabled
-    enabled = not enabled
-    if enabled:
-        checkServer()
-    else:
-        tbi.set_icon(TRAY_ICON_DISABLED,"Disabled")
 
 
 if __name__ == '__main__':
