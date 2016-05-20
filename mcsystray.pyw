@@ -1,6 +1,7 @@
 import wx, threading, ConfigParser
 from mcstatus import MinecraftServer
 from os import path
+from socket import gaierror
 
 # Icon files
 TRAY_ICON_ONLINE = 'icon_green.png'
@@ -15,11 +16,17 @@ def create_menu_item(menu, label, func):
     menu.AppendItem(item)
     return item
 
-class TaskBarIcon(wx.TaskBarIcon):
+class mcsystray(wx.TaskBarIcon):
+    timingThread = None
+    config = None
+    enabled = True
+
     def __init__(self):
-        super(TaskBarIcon, self).__init__()
+        super(mcsystray, self).__init__()
         self.set_icon(TRAY_ICON_DISABLED, 'Enabling...')
         self.Bind(wx.EVT_TASKBAR_LEFT_DOWN, self.on_disable_enable)
+        self.config = config()
+        self.checkServer()
 
     def CreatePopupMenu(self):
         menu = wx.Menu()
@@ -32,16 +39,41 @@ class TaskBarIcon(wx.TaskBarIcon):
         self.SetIcon(icon, title)
 
     def on_exit(self, event):
+        self.stopTimer()
         self.RemoveIcon()
         wx.CallAfter(self.Destroy)
 
     def on_disable_enable(self, event):
-        global enabled
-        enabled = not enabled
-        if enabled:
-            checkServer()
+        self.enabled = not self.enabled
+        if self.enabled:
+            self.checkServer()
         else:
             self.set_icon(TRAY_ICON_DISABLED,"Disabled")
+            self.stopTimer()
+            
+    def stopTimer(self):
+        if self.timingThread != None:
+            self.timingThread.cancel()
+            
+    def checkServer(self):
+        if not self.enabled:
+            return
+        self.timingThread = threading.Timer(self.config.frequency, self.checkServer)
+        self.timingThread.start()
+        server = MinecraftServer.lookup(self.config.address)
+        try:
+            status = server.status()
+        except gaierror:
+            self.set_icon(TRAY_ICON_OFFLINE,"Server not found.")
+        except:
+            self.set_icon(TRAY_ICON_OFFLINE,"Unknown error.")
+        else:
+            if status.players.online < 1:
+                self.set_icon(TRAY_ICON_ONLINE,"No Players. %dms" % (status.latency))
+            elif status.players.online == 1:
+                self.set_icon(TRAY_ICON_INUSE,"1 Player. %dms" % (status.latency))
+            elif status.players.online > 1:
+                self.set_icon(TRAY_ICON_INUSE,"%d Players. %dms" % (status.players.online, status.latency))
             
 class config():
     address = "127.0.0.1:25565"
@@ -72,40 +104,10 @@ class config():
     def fatal_error(self,message):
         wx.MessageBox(message, 'Error', wx.OK | wx.ICON_WARNING)
         wx.CallAfter(self.Destroy)
-    
-        
-def checkServer():
-    if not enabled:
-        return
-    t = threading.Timer(conf.frequency, checkServer)
-    # Setting as daemon ensures the thread exits with the program. This is
-    # probably a bad way to do this, because it might leave resources locked.
-    t.daemon = True
-    t.start()
-    server = MinecraftServer.lookup(conf.address)
-    try:
-        status = server.status()
-    except:
-        tbi.set_icon(TRAY_ICON_OFFLINE,"Server not found.")
-        return
-    # For debugging
-    # print("The server has {0} players and replied in {1} ms".format(status.players.online, status.latency))
-    if status.players.online < 1:
-        tbi.set_icon(TRAY_ICON_ONLINE,"No Players. "+str(status.latency)+" ms")
-    elif status.players.online == 1:
-        tbi.set_icon(TRAY_ICON_INUSE,"1 Player. "+str(status.latency)+" ms")
-    elif status.players.online > 1:
-        tbi.set_icon(TRAY_ICON_INUSE,str(status.players.online)+" Players. "+str(status.latency)+" ms")
-
 
 def main():
-    # Globals are for the weak
-    global tbi, enabled, conf
-    enabled = True
     app = wx.App(False)
-    conf = config()
-    tbi = TaskBarIcon()
-    checkServer()
+    mcsystray()
     app.MainLoop()
 
 
