@@ -1,4 +1,6 @@
-import wx, threading, platform
+import wx
+import threading
+import platform
 from config import config
 from mcstatus import MinecraftServer
 from socket import gaierror
@@ -7,11 +9,14 @@ from cue_lookup import cue_lookup
 from traystatus import *
 
 # Create menu convenience function
+
+
 def create_menu_item(menu, label, func):
     item = wx.MenuItem(menu, -1, label)
     menu.Bind(wx.EVT_MENU, func, id=item.GetId())
     menu.AppendItem(item)
     return item
+
 
 class mcsystray(wx.TaskBarIcon):
     timingThread = None
@@ -43,7 +48,7 @@ class mcsystray(wx.TaskBarIcon):
         try:
             self.cue = CUE(cue_dll)
         except:
-            return self.fatal_error("Failed to init CUE SDK. Does %s exist?"%(cue_dll))
+            return self.fatal_error("Failed to init CUE SDK. Does %s exist?" % (cue_dll))
 
     def CreatePopupMenu(self):
         menu = wx.Menu()
@@ -51,7 +56,7 @@ class mcsystray(wx.TaskBarIcon):
         create_menu_item(menu, 'Exit', self.on_exit)
         return menu
 
-    def set_icon(self, path, title = '...'):
+    def set_icon(self, path, title='...'):
         icon = wx.IconFromBitmap(wx.Bitmap(path))
         self.SetIcon(icon, title)
 
@@ -63,39 +68,44 @@ class mcsystray(wx.TaskBarIcon):
         if self.enabled:
             self.checkServer()
         else:
-            self.update_status(STATUS_DISABLED,"Disabled")
+            self.update_status(STATUS_DISABLED, "Disabled")
             self.stopTimer()
-            
+
     def stopTimer(self):
         if self.timingThread != None:
             self.timingThread.cancel()
-            
+
     def checkServer(self):
         if not self.enabled:
             return
-        self.timingThread = threading.Timer(self.config.frequency, self.checkServer)
+        self.timingThread = threading.Timer(
+            self.config.frequency, self.checkServer)
         self.timingThread.start()
         server = MinecraftServer.lookup(self.config.address)
         try:
             status = server.status()
         except gaierror:
-            self.update_status(STATUS_OFFLINE,"Server not found.")
+            self.update_status(STATUS_OFFLINE, "Server not found.")
         except:
-            self.update_status(STATUS_OFFLINE,"Unknown error.")
+            self.update_status(STATUS_OFFLINE, "Unknown error.")
         else:
             if status.players.online < 1:
-                self.update_status(STATUS_ONLINE,"No Players. %dms" % (status.latency))
+                self.update_status(
+                    STATUS_ONLINE, "No Players. %dms" % (status.latency))
             elif status.players.online == 1:
-                self.update_status(STATUS_INUSE,"1 Player. %dms" % (status.latency))
+                self.update_status(
+                    STATUS_INUSE, "1 Player. %dms" % (status.latency))
             elif status.players.online > 1:
-                self.update_status(STATUS_INUSE,"%d Players. %dms" % (status.players.online, status.latency))
+                self.update_status(STATUS_INUSE, "%d Players. %dms" % (
+                    status.players.online, status.latency))
 
     def update_status(self, status, message):
         if (self.config.corsairkeyindicator):
-            self.cue.SetLedsColors(1, CorsairLedColor(cue_lookup[self.config.corsairkeyname], *self.config.keycol[status]))
-        self.set_icon(self.config.trayicon[status],message)
+            self.cue.SetLedsColors(1, CorsairLedColor(
+                cue_lookup[self.config.corsairkeyname], *self.config.keycol[status]))
+        self.set_icon(self.config.trayicon[status], message)
 
-    def fatal_error(self,message):
+    def fatal_error(self, message):
         wx.MessageBox(message, 'Error', wx.OK | wx.ICON_WARNING)
         self.exit()
 
