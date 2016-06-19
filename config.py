@@ -1,9 +1,11 @@
 import ConfigParser
 from os import path
 from cue_lookup import cue_lookup
+from traystatus import *
 
 class config():
     _cp = None
+    trayicon = {}
     
     def __init__(self):
         self._cp = ConfigParser.ConfigParser()
@@ -27,13 +29,22 @@ class config():
         # Sanity check frequency
         if (self.frequency < 30 or self.frequency > 1000000):
             return self.return_error("Check frequency should be between 30 and 1,000,000 seconds.")
-        # Read the optionals
+        # Read the optional corsair values
         self.corsairkeyindicator = self.getbool('CorsairKeyIndicator', section='corsair', default = False)
         self.corsairkeyname = self.get('CorsairKeyName', section='corsair', default = 'PauseBreak')
         # Validate the key
         if (self.corsairkeyindicator == True):
             if (self.corsairkeyname not in cue_lookup):
                 return self.return_error(self.corsairkeyname + " is not a valid key. See corsair_keylist.txt for list of keys.")
+        # Read the optional icon files
+        self.trayicon[STATUS_DISABLED] = self.get('DisabledIcon', section='icons', default = 'icon_grey.png')
+        self.trayicon[STATUS_OFFLINE] = self.get('OfflineIcon', section='icons', default = 'icon_red.png')
+        self.trayicon[STATUS_ONLINE] = self.get('OnlineIcon', section='icons', default = 'icon_green.png')
+        self.trayicon[STATUS_INUSE] = self.get('InUseIcon', section='icons', default = 'icon_blue.png')
+        # Validate icon files existance
+        for i in self.trayicon.values():
+            if (path.isfile(i) == False):
+                return self.return_error(i+" does not exist.")
         return True
 
     # Config get helper function

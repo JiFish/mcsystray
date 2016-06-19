@@ -4,18 +4,7 @@ from mcstatus import MinecraftServer
 from socket import gaierror
 from cue_sdk import *
 from cue_lookup import cue_lookup
-
-# Statuses
-STATUS_DISABLED = 0
-STATUS_OFFLINE = 1
-STATUS_ONLINE = 2
-STATUS_INUSE = 3
-
-TRAY_ICON = {
-    STATUS_DISABLED : 'icon_grey.png',
-    STATUS_OFFLINE : 'icon_red.png',
-    STATUS_ONLINE : 'icon_green.png',
-    STATUS_INUSE : 'icon_blue.png'}
+from traystatus import *
 
 KEY_COLS = {
     STATUS_DISABLED : (128, 128, 128),
@@ -110,7 +99,7 @@ class mcsystray(wx.TaskBarIcon):
     def update_status(self, status, message):
         if (self.config.corsairkeyindicator):
             self.cue.SetLedsColors(1, CorsairLedColor(cue_lookup[self.config.corsairkeyname], *KEY_COLS[status]))
-        self.set_icon(TRAY_ICON[status],message)
+        self.set_icon(self.config.trayicon[status],message)
 
     def fatal_error(self,message):
         wx.MessageBox(message, 'Error', wx.OK | wx.ICON_WARNING)
