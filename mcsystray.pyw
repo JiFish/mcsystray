@@ -6,12 +6,6 @@ from cue_sdk import *
 from cue_lookup import cue_lookup
 from traystatus import *
 
-KEY_COLS = {
-    STATUS_DISABLED : (128, 128, 128),
-    STATUS_OFFLINE : (255, 0, 0),
-    STATUS_ONLINE : (0, 255, 0),
-    STATUS_INUSE : (0, 0, 355)}
-
 # Create menu convenience function
 def create_menu_item(menu, label, func):
     item = wx.MenuItem(menu, -1, label)
@@ -98,7 +92,7 @@ class mcsystray(wx.TaskBarIcon):
 
     def update_status(self, status, message):
         if (self.config.corsairkeyindicator):
-            self.cue.SetLedsColors(1, CorsairLedColor(cue_lookup[self.config.corsairkeyname], *KEY_COLS[status]))
+            self.cue.SetLedsColors(1, CorsairLedColor(cue_lookup[self.config.corsairkeyname], *self.config.keycol[status]))
         self.set_icon(self.config.trayicon[status],message)
 
     def fatal_error(self,message):

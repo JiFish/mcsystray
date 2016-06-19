@@ -6,6 +6,7 @@ from traystatus import *
 class config():
     _cp = None
     trayicon = {}
+    keycol = {}
     
     def __init__(self):
         self._cp = ConfigParser.ConfigParser()
@@ -32,6 +33,10 @@ class config():
         # Read the optional corsair values
         self.corsairkeyindicator = self.getbool('CorsairKeyIndicator', section='corsair', default = False)
         self.corsairkeyname = self.get('CorsairKeyName', section='corsair', default = 'PauseBreak')
+        self.keycol[STATUS_DISABLED] = self.gethex('DisabledColor', section='corsair', default = (128,128,128))
+        self.keycol[STATUS_OFFLINE] = self.gethex('OfflineColor', section='corsair', default = (255,0,0))
+        self.keycol[STATUS_ONLINE] = self.gethex('OnlineColor', section='corsair', default = (0,255,0))
+        self.keycol[STATUS_INUSE] = self.gethex('InUseColor', section='corsair', default = (0,0,255))
         # Validate the key
         if (self.corsairkeyindicator == True):
             if (self.corsairkeyname not in cue_lookup):
@@ -54,6 +59,9 @@ class config():
                 return self._cp.getint(section, key)
             elif type == 'bool':
                 return self._cp.getboolean(section, key)
+            elif type == 'hex':
+                t = self._cp.get(section, key)
+                return tuple(ord(c) for c in t.decode('hex'))
             else:
                 return self._cp.get(section, key)
         except:
@@ -66,6 +74,9 @@ class config():
     def getbool(self, key, default = None, section = 'mcsystray'):
         return self.get(key, type = 'bool', default = default, section = section)
                 
+    def gethex(self, key, default = None, section = 'mcsystray'):
+        return self.get(key, type = 'hex', default = default, section = section)
+
     def return_error(self,errormsg):
         self.errormsg = errormsg
         return False
