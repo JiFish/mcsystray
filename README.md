@@ -19,6 +19,7 @@ The python script has a number of requirements.
 It has been tested in Python 2.7, but may run with Python 3. The following
 packages are required: mcstatus, cue_sdk and enum34. (enum34 not required for
 Python 3.) Assumning you have pip installed you can get the submodules like:
+
 pip install mcstatus cue_sdk enum34
 
 If you are using the python version and want the corsair features, you will
