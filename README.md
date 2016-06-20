@@ -22,6 +22,6 @@ Python 3.) Assumning you have pip installed you can get the submodules like:
 pip install mcstatus cue_sdk enum34
 
 If you are using the python version and want the corsair features, you will
-need the SDK dll. This is CUESDK.x64_2013.dll for 64-bit system and
-CUESDK_2013.dll. You can obtain it from the Corsair CUE SDK here:
+need the SDK dll. This is CUESDK.x64_2013.dll for 64-bit systems and
+CUESDK_2013.dll for 32-bit. You can obtain it from the Corsair CUE SDK here:
 http://www.corsair.com/en/support/downloads
