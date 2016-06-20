@@ -6,9 +6,19 @@ optional key lighting options for Corsair keyboards.
 
 Setup
 -----
-Open config.ini and set the server's address and port. Then optionally change
-the check frequency. Save and then run mcsystray.pyw (Python version) or
-mcsystray.exe (Windows stand-alone version.)
+Open config.ini and set the server's address and port.
+Then optionally change the check frequency and other settings.
+
+Usage
+-----
+Run mcsystray.pyw (Python version) or mcsystray.exe (Windows stand-alone
+version.) Optionally you can provide a custom ini file as an argument:
+
+mcsystray.exe custom.ini
+
+Under Windows you can drag the .ini file on to the program. This allows you to
+have multiple configurations for multiple servers. (Which can be run at the
+same time.)
 
 Requirements
 ------------

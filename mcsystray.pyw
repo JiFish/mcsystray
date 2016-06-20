@@ -1,6 +1,7 @@
 import wx
 import threading
 import platform
+from sys import argv
 from config import config
 from mcstatus import MinecraftServer
 from socket import gaierror
@@ -25,8 +26,12 @@ class mcsystray(wx.TaskBarIcon):
 
     def __init__(self):
         super(mcsystray, self).__init__()
+        if (len(argv) > 1):
+            config_file = argv[1]
+        else:
+            config_file = 'config.ini'
         self.config = config()
-        if (self.config.load() == False):
+        if (self.config.load(config_file) == False):
             self.fatal_error(self.config.errormsg)
             return
         if (self.config.corsairkeyindicator):
