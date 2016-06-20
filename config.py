@@ -29,8 +29,8 @@ class config():
         if (self.frequency == None):
             return self.return_error("Could not read frequency from config file.")
         # Sanity check frequency
-        if (self.frequency < 30 or self.frequency > 1000000):
-            return self.return_error("Check frequency should be between 30 and 1,000,000 seconds.")
+        if (self.frequency < 10 or self.frequency > 1000000):
+            return self.return_error("Check frequency should be between 10 and 1,000,000 seconds.")
         # Read the optional corsair values
         self.corsairkeyindicator = self.getbool(
             'CorsairKeyIndicator', section='corsair', default=False)
