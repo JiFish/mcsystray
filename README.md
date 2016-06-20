@@ -12,6 +12,16 @@ mcsystray.exe (Windows stand-alone version.)
 Requirements
 ------------
 
-Python 2.7 for the python script. Nothing for the windows stand-alone version.
+Nothing for the windows stand-alone version.
 
-mcstatus is already included as a submodule. 
+The python script has a number of requirements.
+
+It has been tested in Python 2.7, but may run with Python 3. The following
+packages are required: mcstatus, cue_sdk and enum34. (enum34 not required for
+Python 3.) Assumning you have pip installed you can get the submodules like:
+pip install mcstatus cue_sdk enum34
+
+If you are using the python version and want the corsair features, you will
+need the SDK dll. This is CUESDK.x64_2013.dll for 64-bit system and
+CUESDK_2013.dll. You can obtain it from the Corsair CUE SDK here:
+http://www.corsair.com/en/support/downloads

@@ -5,7 +5,6 @@ from config import config
 from mcstatus import MinecraftServer
 from socket import gaierror
 from cue_sdk import *
-from cue_lookup import cue_lookup
 from traystatus import *
 
 # Create menu convenience function
@@ -101,8 +100,8 @@ class mcsystray(wx.TaskBarIcon):
 
     def update_status(self, status, message):
         if (self.config.corsairkeyindicator):
-            self.cue.SetLedsColors(1, CorsairLedColor(
-                cue_lookup[self.config.corsairkeyname], *self.config.keycol[status]))
+            self.cue.SetLedsColors(CorsairLedColor(
+                CLK[self.config.corsairkeyname], *self.config.keycol[status]))
         self.set_icon(self.config.trayicon[status], message)
 
     def fatal_error(self, message):

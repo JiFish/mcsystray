@@ -1,6 +1,6 @@
 import ConfigParser
 from os import path
-from cue_lookup import cue_lookup
+from cue_sdk import CLK
 from traystatus import *
 
 
@@ -46,7 +46,7 @@ class config():
             'InUseColor', section='corsair', default=(0, 0, 255))
         # Validate the key
         if (self.corsairkeyindicator == True):
-            if (self.corsairkeyname not in cue_lookup):
+            if (self.corsairkeyname not in CLK):
                 return self.return_error(self.corsairkeyname + " is not a valid key. See corsair_keylist.txt for list of keys.")
         # Read the optional icon files
         self.trayicon[STATUS_DISABLED] = self.get(
