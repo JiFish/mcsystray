@@ -47,7 +47,9 @@ class mcsystray(wx.TaskBarIcon):
             cue_dll = "CUESDK_2013.dll"
         try:
             self.cue = CUE(cue_dll)
-        except: pass
+        except:
+            return False
+        return True
 
     def CreatePopupMenu(self):
         menu = wx.Menu()
@@ -105,11 +107,10 @@ class mcsystray(wx.TaskBarIcon):
         
     def update_corsair_key(self, status):
         # Try to init CUE if not initialised.
-        if (self.cue == None):
-            self.init_corsair()
         # If it's still not initialised, skip setting the key this time
         if (self.cue == None):
-            return
+            if (self.init_corsair() == False):
+                return
         self.cue.SetLedsColors(CorsairLedColor(
                 CLK[self.config.corsairkeyname], *self.config.keycol[status]))
         
