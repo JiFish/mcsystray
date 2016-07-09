@@ -34,10 +34,6 @@ class mcsystray(wx.TaskBarIcon):
         if (self.config.load(config_file) == False):
             self.fatal_error(self.config.errormsg)
             return
-        if (self.config.corsairkeyindicator):
-            self.init_corsair()
-            if (self.cue == None):
-                return
         self.update_status(STATUS_DISABLED, 'Enabling...')
         self.Bind(wx.EVT_TASKBAR_LEFT_DOWN, self.on_disable_enable)
         self.checkServer()
@@ -51,8 +47,7 @@ class mcsystray(wx.TaskBarIcon):
             cue_dll = "CUESDK_2013.dll"
         try:
             self.cue = CUE(cue_dll)
-        except:
-            return self.fatal_error("Failed to init CUE SDK. Does %s exist?" % (cue_dll))
+        except: pass
 
     def CreatePopupMenu(self):
         menu = wx.Menu()
@@ -105,9 +100,19 @@ class mcsystray(wx.TaskBarIcon):
 
     def update_status(self, status, message):
         if (self.config.corsairkeyindicator):
-            self.cue.SetLedsColors(CorsairLedColor(
-                CLK[self.config.corsairkeyname], *self.config.keycol[status]))
+            self.update_corsair_key(status)
         self.set_icon(self.config.trayicon[status], message)
+        
+    def update_corsair_key(self, status):
+        # Try to init CUE if not initialised.
+        if (self.cue == None):
+            self.init_corsair()
+        # If it's still not initialised, skip setting the key this time
+        if (self.cue == None):
+            return
+        self.cue.SetLedsColors(CorsairLedColor(
+                CLK[self.config.corsairkeyname], *self.config.keycol[status]))
+        
 
     def fatal_error(self, message):
         wx.MessageBox(message, 'Error', wx.OK | wx.ICON_WARNING)
